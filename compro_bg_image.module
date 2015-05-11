@@ -1,0 +1,76 @@
+<?php
+/**
+* @file
+* Provides an image field formatter to use image as a background.
+*/
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function compro_bg_image_field_formatter_info() {
+  return array(
+    'compro_bg_image' => array(
+      'label' => t('Background image'),
+      'field types' => array('image'),
+      'settings' => array(
+        'compro_bg_image_style' => '',
+        'compro_bg_image_selector' => '',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function compro_bg_image_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $image_styles = image_style_options();
+
+  $element['compro_bg_image_style'] = array(
+    '#type' => 'select',
+    '#title' => t('Image Style'),
+    '#default_value' => $settings['compro_bg_image_style'],
+    '#options' => $image_styles,
+  );
+
+  $element['compro_bg_image_selector'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Selector'),
+    '#default_value' => $settings['compro_bg_image_selector'],
+  );
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function compro_bg_image_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $summary = t('Image style: @image_style / Selector: @selector', array('@image_style' => $settings['compro_bg_image_style'], '@selector' => $settings['compro_bg_image_selector']));
+
+  return $summary;
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function compro_bg_image_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+
+  // Loop through items
+  foreach ($items as $delta => $item) {
+    // Grab image url.
+    $image = image_style_url($settings['compro_bg_image_style'], $item['uri']);
+    // Set hero image as background for provided selector.
+    drupal_add_css($settings['compro_bg_image_selector'] . ' { background-image: url(' . $image . '); }', array('type' => 'inline', 'preprocess' => FALSE));
+  }
+
+  return $element;
+}
