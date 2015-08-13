@@ -15,6 +15,11 @@ function compro_bg_image_field_formatter_info() {
       'settings' => array(
         'compro_bg_image_style' => '',
         'compro_bg_image_selector' => '',
+        'compro_bg_image_repeat' => '',
+        'compro_bg_image_position_x' => '',
+        'compro_bg_image_position_y' => '',
+        'compro_bg_image_size' => '',
+        'compro_bg_image_extra_background' => '',
       ),
     ),
   );
@@ -34,12 +39,64 @@ function compro_bg_image_field_formatter_settings_form($field, $instance, $view_
     '#title' => t('Image Style'),
     '#default_value' => $settings['compro_bg_image_style'],
     '#options' => $image_styles,
+    '#required' => TRUE,
   );
 
   $element['compro_bg_image_selector'] = array(
     '#type' => 'textfield',
     '#title' => t('Selector'),
     '#default_value' => $settings['compro_bg_image_selector'],
+    '#required' => TRUE,
+  );
+
+  $element['compro_bg_image_repeat'] = array(
+    '#type' => 'select',
+    '#title' => t('Background repeat'),
+    '#options' => array(
+      'repeat' => t('repeat'),
+      'repeat-x' => t('repeat-x'),
+      'repeat-y' => t('repeat-y'),
+      'space' => t('space'),
+      'round' => t('round'),
+      'no-repeat' => t('no-repeat'),
+    ),
+    '#required' => TRUE,
+    '#default_value' => $settings['compro_bg_image_repeat'],
+  );
+
+  $element['compro_bg_image_position_x'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Background x position'),
+    '#default_value' => $settings['compro_bg_image_position_x'],
+    '#required' => TRUE,
+    '#description' => t('Enter a valid background-position value: top, bottom, left, right, center, 25%, 0px, etc'),
+  );
+
+  $element['compro_bg_image_position_y'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Background y position'),
+      '#default_value' => $settings['compro_bg_image_position_y'],
+      '#required' => TRUE,
+      '#description' => t('Enter a valid background-position value: top, bottom, left, right, center, 25%, 0px, etc'),
+  );
+
+  $element['compro_bg_image_size'] = array(
+    '#type' => 'select',
+    '#title' => t('Background size'),
+    '#options' => array(
+      'auto' => t('auto'),
+      'cover' => t('cover'),
+      'contain' => t('contain'),
+    ),
+    '#required' => TRUE,
+    '#default_value' => $settings['compro_bg_image_size'],
+  );
+
+  $element['compro_bg_image_extra_background'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Extra background'),
+    '#description' => t('Provide an additional background you would like to apply. This will use the shorthand background property so specify your repeats, positions, etc: linear-gradient(to right, rgba(30, 75, 115, 1),  rgba(255, 255, 255, 0)) no-repeat (no semi-colon)'),
+    '#default_value' => $settings['compro_bg_image_extra_background'],
   );
 
   return $element;
@@ -68,8 +125,16 @@ function compro_bg_image_field_formatter_view($entity_type, $entity, $field, $in
   foreach ($items as $delta => $item) {
     // Grab image url.
     $image = image_style_url($settings['compro_bg_image_style'], $item['uri']);
-    // Set hero image as background for provided selector.
-    drupal_add_css($settings['compro_bg_image_selector'] . ' { background-image: url(' . $image . '); }', array('type' => 'inline', 'preprocess' => FALSE));
+
+    // Check for additional backgrounds.
+    if ($settings['compro_bg_image_extra_background']) {
+      $background_css = 'background: ' . $settings['compro_bg_image_extra_background'] . ', url(' . $image . ') ' . $settings['compro_bg_image_repeat'] . ' ' . $settings['compro_bg_image_position_x'] . ' ' . $settings['compro_bg_image_position_y'] . '/' . $settings['compro_bg_image_size'] . ';';
+    }
+    else {
+      $background_css = 'background: url(' . $image . ') ' . $settings['compro_bg_image_repeat'] . ' ' . $settings['compro_bg_image_position_x'] . ' ' . $settings['compro_bg_image_position_y'] . '/' . $settings['compro_bg_image_size'] . ';';
+    }
+
+    drupal_add_css($settings['compro_bg_image_selector'] . ' { ' . $background_css .' }', array('type' => 'inline'));
   }
 
   return $element;
