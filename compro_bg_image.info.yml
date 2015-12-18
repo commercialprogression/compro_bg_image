@@ -1,0 +1,5 @@
+name: Compro Bg Image
+description: Provides an image field formatter to use image as a background.
+package: compro
+type: module
+core: 8.x
